@@ -13,7 +13,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TernaryFilter;
 
 class TimeRecordResource extends Resource
 {
@@ -25,7 +28,11 @@ class TimeRecordResource extends Resource
     {
         $query = static::getModel()::query();
 
-        return $query->where('user_id', Auth::id());
+        if (Auth::user()->is_admin) {
+            return $query;
+        } else {
+            return $query->where('user_id', Auth::id());
+        }
     }
 
     public static function form(Form $form): Form
@@ -44,13 +51,52 @@ class TimeRecordResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')->label('Empleado'),
-                Tables\Columns\TextColumn::make('check_in')->dateTime(),
-                Tables\Columns\TextColumn::make('check_out')->dateTime(),
-                Tables\Columns\TextColumn::make('ip'),
+                Tables\Columns\TextColumn::make('user.name')->label('Empleado')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('check_in')->dateTime()
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('check_out')->dateTime()
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('approved_at')->label('Approved')
+                    ->icon(fn(?string $state): string => match (true) {
+                        $state === null => 'heroicon-o-x-mark',
+                        default => 'heroicon-o-check-badge',
+                    })
+                // ->icon(function (?string $state): string {
+                //     if ($state === null) {
+                //         return 'heroicon-o-x-mark';
+                //     } else {
+                //         return 'heroicon-o-check-badge';
+                //     }
+                // }),
+                ,
+                Tables\Columns\TextColumn::make('ip')
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([])
-            ->actions([])
+            ->filters([
+                // Filter::make('approved_at')
+                //     ->query(fn(Builder $query): Builder => $query->where('approved_at', '!=', null))
+                //     ->toggle(),
+                TernaryFilter::make('approved_at')
+                    ->label('Is approved')
+                    ->placeholder('All time records')
+                    ->trueLabel('Approved')
+                    ->falseLabel('Not approved')
+                    ->queries(
+                        true: fn(Builder $query) => $query->whereNotNull('approved_at'),
+                        false: fn(Builder $query) => $query->whereNull('approved_at'),
+                        blank: fn(Builder $query) => $query
+                    )
+            ])
+            ->actions([
+                Action::make('Approve')
+                    ->action(fn(TimeRecord $record) => $record->update(['approved_at' => now()]))
+                    ->requiresConfirmation()
+                    ->visible(Auth::user()->is_admin)
+            ])
 
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),

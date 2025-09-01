@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\TimeRecord;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -20,5 +21,11 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
             'is_admin' => true,
         ]);
+
+        User::factory()->times(10)
+            ->has(TimeRecord::factory(5))
+            ->create([
+                'is_admin' => false,
+            ]);
     }
 }

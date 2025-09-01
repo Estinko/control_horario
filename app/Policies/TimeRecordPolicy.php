@@ -21,7 +21,11 @@ class TimeRecordPolicy
      */
     public function view(User $user, TimeRecord $timeRecord): bool
     {
-        return true;
+        if ($user->is_admin) {
+            return true;
+        } else {
+            return $timeRecord->user_id == $user->id;
+        }
     }
 
     /**

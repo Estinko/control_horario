@@ -17,6 +17,7 @@ class TimeRecord extends Model
         'check_in',
         'check_out',
         'ip',
+        'approved_at'
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class TimeRecord extends Model
         return [
             'check_in' => 'datetime',
             'check_out' => 'datetime',
+            'approved_at' => 'datetime',
         ];
     }
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
