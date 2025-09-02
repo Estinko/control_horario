@@ -25,6 +25,12 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'dni',
+        'birthdate',
+        'vacation_left',
+        'salary',
+        'employee_key',
+        'bonus_job',
     ];
 
     /**
@@ -48,6 +54,7 @@ class User extends Authenticatable implements FilamentUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'bonus_job' => 'decimal'
         ];
     }
 
@@ -59,5 +66,9 @@ class User extends Authenticatable implements FilamentUser
     public function timeRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(TimeRecord::class);
+    }
+    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Employee::class);
     }
 }

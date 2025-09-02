@@ -17,8 +17,6 @@ class ListTimeRecords extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-
-
             Actions\Action::make('fichar')
                 ->label('Fichar')
                 ->color('success')
